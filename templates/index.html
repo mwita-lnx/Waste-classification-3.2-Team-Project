@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Waste ID</title>
+
+  <style>
+    body {
+  font-family: "Lexend", sans-serif;
+}
+
+.container {
+  width: 1100px;
+  margin: 0 auto;
+}
+@media (max-width: 996px) {
+  .container {
+    width: 100%;
+    padding-left: -15px;
+    padding-right: -15px;
+  }
+}
+
+.header {
+  text-align: center;
+}
+.header h1 {
+  font-size: 45px;
+}
+@media (max-width: 996px) {
+  .header h1 {
+    font-size: 30px;
+  }
+}
+@media (max-width: 600px) {
+  .header h1 {
+    font-size: 20px;
+  }
+}
+
+.list__items {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-column-gap: 1.5em;
+  grid-row-gap: 1.5em;
+}
+@media (max-width: 996px) {
+  .list__items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .list__items {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+.item {
+  border: 1px solid #ddd;
+  height: 350px;
+  width: 100%;
+  background: #ddd;
+  overflow: hidden;
+  position: relative;
+}
+@media (max-width: 996px) {
+  .item {
+    height: 300px;
+  }
+}
+.item:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2;
+  transition: all 200ms linear;
+}
+.item:hover:before {
+  background: rgba(0, 0, 0, 0.7);
+}
+.item:hover .item__content {
+  visibility: hidden;
+}
+.item:hover .item__content--hidden {
+  visibility: visible;
+}
+.item .item__content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+}
+.item .item__content--icon {
+  margin: 0 auto;
+}
+.item .item__content--text {
+  color: white;
+  margin-top: 10px;
+  font-weight: 600;
+  font-size: 18px;
+}
+.item .item__content--readmore {
+  position: absolute;
+  bottom: 10px;
+  color: #d13853;
+}
+.item .item__content--hidden {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  visibility: hidden;
+  z-index: 5;
+}
+.item .item__content--hidden--innerWrap {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.item .item__content--hidden--header {
+  color: white;
+  margin-bottom: 1.2em;
+  margin-top: 2.5em;
+  font-weight: 600;
+  font-size: 18px;
+}
+.item .item__content--hidden--list {
+  width: 100%;
+  color: white;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.item .item__content--hidden--list li {
+  padding: 0 0 0 13px;
+  margin-bottom: 10px;
+  position: relative;
+  font-size: 14px;
+}
+.item .item__content--hidden--list li:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, 0);
+  left: 0;
+  border-radius: 50%;
+  width: 5px;
+  height: 5px;
+  background-color: #d13853;
+}
+.item .item__content--hidden--readmore {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  bottom: 30px;
+  text-decoration: none;
+}
+.item .item__content--hidden--readmore span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  color: #d13853;
+  font-weight: 600;
+}
+.item .item__content--hidden--readmore span:before {
+  content: "";
+  width: 8px;
+  height: 2px;
+  right: -15px;
+  position: absolute;
+  background-color: #d13853;
+  top: 4px;
+  transform: rotate(45deg);
+}
+.item .item__content--hidden--readmore span:after {
+  content: "";
+  width: 8px;
+  height: 2px;
+  right: -15px;
+  position: absolute;
+  background-color: #d13853;
+  top: 9px;
+  transform: rotate(-45deg);
+}
+.item .item__image img {
+  width: 100%;
+  object-fit: contain;
+  height: auto;
+}
+  </style>
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap" rel="stylesheet">
+
+<div class="container">
+  
+  <div class="header">
+    <h1>Organic Waste Identification</h1>
+  </div>
+  
+  <div class="list__items">
+    <div class="item">
+         <div class="item__image">
+           <img src="static/img/background.jpg" alt="">
+         </div>
+         
+         <div class="item__content">
+           <div class="item__content--icon">
+             <img src="static/img/vision.svg">
+           </div>
+            <div class="item__content--text">Upload an image</div>
+         </div>
+         
+          <div class="item__content--hidden">
+            <div class="item__content--hidden--innerWrap">
+              <div class="item__content--hidden--header">
+                Upload an image
+            </div>
+            
+            <ul class='item__content--hidden--list'>
+              <li>Upload an image to get it's classification </li>
+              
+            </u>
+            </div>
+            
+            
+             <a href="/upload" class="item__content--hidden--readmore">
+                <span>Upload</span>
+              </a>
+          </div>
+         
+       </div>
+    <div class="item">
+         <div class="item__image">
+          <img src="static/img/background.jpg" alt="">
+         </div>
+         
+         <div class="item__content">
+           <div class="item__content--icon">
+             <img src="static/img/machineLearning.svg">
+           </div>
+            <div class="item__content--text">Connect to image feed</div>
+         </div>
+         
+          <div class="item__content--hidden">
+            <div class="item__content--hidden--innerWrap">
+              <div class="item__content--hidden--header">
+                Connect to image feild
+            </div>
+            
+            <ul class='item__content--hidden--list'>
+              <li>Connect to a live feild to get realtime classification</li>
+            
+            </u>
+            </div>
+            
+            
+             <a href="/livefeed" class="item__content--hidden--readmore">
+                <span>connect</span>
+              </a>
+          </div>
+         
+       </div>
+   
+  </div>
+</div>
+<!-- partial -->
+  
+</body>
+</html>

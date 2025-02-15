@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction with Frame</title>
+    <!-- Bootstrap CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        #prediction {
+            margin-bottom: 20px;
+        }
+
+        #frame img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Prediction with Frame</h1>
+        <div id="prediction" class="alert alert-info"></div>
+        <div id="frame" class="mb-5"></div>
+    </div>
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/popper.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+
+    <script>
+        function updatePrediction(prediction, frame) {
+            var predictionElement = document.getElementById('prediction');
+            var frameElement = document.getElementById('frame');
+
+            if (prediction === 'No prediction available') {
+                predictionElement.innerHTML = '<strong>Prediction:</strong> ' + prediction;
+                frameElement.innerHTML = '';
+            } else {
+                predictionElement.innerHTML = '<strong>Prediction:</strong> ' + prediction;
+                frameElement.innerHTML = '<img src="data:image/jpeg;base64,' + frame + '" class="img-fluid" alt="Frame">';
+            }
+        }
+
+        function fetchPrediction() {
+            fetch('/predict')
+                .then(response => response.json())
+                .then(data => updatePrediction(data.prediction, data.frame))
+                .catch(error => console.error('Error:', error));
+        }
+
+        setInterval(fetchPrediction, 2000); // Update every 5 seconds
+
+
+    </script>
+</body>
+</html>

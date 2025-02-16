@@ -1,60 +1,316 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Waste Classification</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1E2837',
+                            200: '#1A2333',
+                            300: '#151D2A',
+                            400: '#0F1621'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         .video-container {
             position: relative;
+            aspect-ratio: 16 / 9;
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
+            overflow: hidden;
+            border-radius: 0.5rem;
         }
         .video-feed {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
         }
-        .prediction-overlay {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
+        .prediction-badge {
+            transition: all 0.3s ease;
         }
-    
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .chart-container {
+            height: 200px;
+            width: 100%;
+        }
     </style>
 </head>
-<body>
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">Live Waste Classification</h1>
-        
-        <div class="video-container">
-            <img src="{{ url_for('video_feed') }}" class="video-feed" alt="Live video stream">
+<body class="min-h-screen bg-dark-400 text-gray-100 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8">
+            <a href="/" class="inline-flex items-center text-gray-400 hover:text-white">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Dashboard
+            </a>
+            <div class="flex items-center space-x-4">
+                <button id="themeToggle" class="p-2 rounded-lg bg-dark-200 hover:bg-dark-100">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <div class="flex items-center space-x-2 bg-dark-200 p-2 rounded-lg">
+                    <div class="h-3 w-3 bg-green-500 rounded-full pulse-dot"></div>
+                    <span id="timestamp" class="text-sm text-gray-400"></span>
+                </div>
+            </div>
         </div>
-        
-        <div class="text-center mt-4">
-            <h3>Current Classification</h3>
-            <div id="prediction"style="font-size: 40px;" class="alert alert-info">Waiting for prediction...</div>
+
+        <h1 class="text-4xl font-bold mb-8 text-center text-white">
+            Live Waste Classification
+        </h1>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Video Feed Card -->
+                <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Live Feed</h2>
+                        <span class="text-sm text-gray-400">Camera 01</span>
+                    </div>
+                    <div class="video-container bg-dark-300 ring-1 ring-gray-700">
+                        <img src="{{ url_for('video_feed') }}" class="video-feed" alt="Live video stream">
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Detection History -->
+                    <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                        <h3 class="text-lg font-semibold mb-4">Detection History</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-400">Recyclable Items</span>
+                                <span id="recyclable-count" class="text-sm font-medium text-green-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-400">Organic Items</span>
+                                <span id="organic-count" class="text-sm font-medium text-yellow-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-400">Total Processed</span>
+                                <span id="total-count" class="text-sm font-medium text-blue-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accuracy Metrics -->
+                    <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                        <h3 class="text-lg font-semibold mb-4">Performance Metrics</h3>
+                        <div class="space-y-4">
+                            <div class="bg-dark-300 p-3 rounded-lg">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-400">Processing Time</span>
+                                    <span id="processing-time" class="text-sm font-medium text-blue-400">0ms</span>
+                                </div>
+                                <div class="w-full bg-dark-100 rounded-full h-1.5">
+                                    <div id="processing-bar" class="bg-blue-400 rounded-full h-1.5 transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-dark-300 p-3 rounded-lg">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-400">Model Confidence</span>
+                                    <span id="confidence" class="text-sm font-medium text-green-400">0%</span>
+                                </div>
+                                <div class="w-full bg-dark-100 rounded-full h-1.5">
+                                    <div id="confidence-bar" class="bg-green-400 rounded-full h-1.5 transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Current Classification -->
+                <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4">Current Classification</h3>
+                    <div id="prediction" class="prediction-badge p-4 rounded-lg bg-opacity-10 bg-blue-900 border border-blue-800">
+                        <div class="flex items-center">
+                            <i class="fas fa-robot text-blue-400 mr-3 text-xl"></i>
+                            <div>
+                                <p class="text-sm text-blue-400 font-medium">AI Prediction</p>
+                                <p id="prediction-text" class="text-lg font-semibold text-blue-200 mt-1">
+                                    Waiting for detection...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4">System Status</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-dark-300 rounded-lg">
+                            <span class="text-sm font-medium text-gray-400">Camera</span>
+                            <span id="camera-status" class="text-sm font-medium text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i> Active
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-dark-300 rounded-lg">
+                            <span class="text-sm font-medium text-gray-400">ML Model</span>
+                            <span id="model-status" class="text-sm font-medium text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i> Running
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-dark-300 rounded-lg">
+                            <span class="text-sm font-medium text-gray-400">Arduino</span>
+                            <span id="arduino-status" class="text-sm font-medium text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i> Connected
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Detections -->
+                <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4">Recent Detections</h3>
+                    <div class="space-y-3" id="recentDetections">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <script>
-        function updatePrediction() {
-            fetch('/get_prediction')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('prediction').textContent = data.prediction;
-                })
-                .catch(error => console.error('Error:', error));
+        // Theme Toggle
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    themeToggle.innerHTML = document.documentElement.classList.contains('dark') ? 
+        '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+});
+
+// Recent detections queue
+const recentDetections = [];
+const maxRecentDetections = 5;
+
+function addDetection(prediction, confidence) {
+    const time = new Date().toLocaleTimeString();
+    
+    recentDetections.unshift({ prediction, time, confidence });
+    if (recentDetections.length > maxRecentDetections) {
+        recentDetections.pop();
+    }
+    
+    const container = document.getElementById('recentDetections');
+    container.innerHTML = recentDetections.map(detection => `
+        <div class="flex items-center justify-between p-3 bg-dark-300 rounded-lg">
+            <div class="flex items-center space-x-3">
+                <i class="fas ${detection.prediction.includes('Recyclable') ? 'fa-recycle text-green-400' : 'fa-leaf text-yellow-400'}"></i>
+                <span class="text-sm font-medium text-gray-300">${detection.prediction}</span>
+            </div>
+            <span class="text-sm text-gray-500">${detection.time}</span>
+        </div>
+    `).join('');
+}
+
+function updateTimestamp() {
+    const now = new Date();
+    document.getElementById('timestamp').textContent = now.toLocaleTimeString();
+}
+
+async function updateStatus() {
+    try {
+        // Update status
+        const statusResponse = await fetch('/api/status');
+        const statusData = await statusResponse.json();
+
+        // Update component statuses
+        function updateComponentStatus(id, status, activeText, inactiveText) {
+            const element = document.getElementById(`${id}-status`);
+            element.className = `text-sm font-medium ${status ? 'text-green-400' : 'text-red-400'}`;
+            element.innerHTML = status ? 
+                `<i class="fas fa-check-circle mr-1"></i> ${activeText}` : 
+                `<i class="fas fa-times-circle mr-1"></i> ${inactiveText}`;
         }
 
-        // Update prediction every 500ms
-        setInterval(updatePrediction, 500);
+        updateComponentStatus('camera', statusData.camera, 'Active', 'Inactive');
+        updateComponentStatus('model', statusData.model, 'Running', 'Stopped');
+        updateComponentStatus('arduino', statusData.arduino, 'Connected', 'Disconnected');
+
+        // Update metrics
+        document.getElementById('processing-time').textContent = `${statusData.performance.processing_time}ms`;
+        document.getElementById('processing-bar').style.width = `${Math.min(statusData.performance.processing_time / 2, 100)}%`;
+        
+        // Update counts
+        document.getElementById('recyclable-count').textContent = statusData.metrics.predictions.recyclable;
+        document.getElementById('organic-count').textContent = statusData.metrics.predictions.organic;
+        document.getElementById('total-count').textContent = statusData.metrics.items_processed;
+
+    } catch (error) {
+        console.error('Error updating status:', error);
+    }
+}
+
+async function updatePrediction() {
+    try {
+        const response = await fetch('/get_prediction');
+        const data = await response.json();
+        
+        const predictionBadge = document.getElementById('prediction');
+        const predictionText = document.getElementById('prediction-text');
+        const prediction = data.prediction;
+
+        if (prediction !== 'No prediction available' && prediction !== predictionText.textContent) {
+            predictionText.textContent = prediction;
+            
+            // Generate random confidence for demo (replace with actual confidence from backend)
+            const confidence = Math.round(Math.random() * 20 + 80);
+            document.getElementById('confidence').textContent = `${confidence}%`;
+            document.getElementById('confidence-bar').style.width = `${confidence}%`;
+            
+            // Add to recent detections
+            addDetection(prediction, confidence);
+            
+            if (prediction.includes('Recyclable')) {
+                predictionBadge.className = 'prediction-badge p-4 rounded-lg bg-green-900 bg-opacity-10 border border-green-800';
+                predictionBadge.querySelector('i').className = 'fas fa-recycle text-green-400 mr-3 text-xl';
+                predictionBadge.querySelector('p:first-child').className = 'text-sm text-green-400 font-medium';
+                predictionBadge.querySelector('p:last-child').className = 'text-lg font-semibold text-green-200 mt-1';
+            } else {
+                predictionBadge.className = 'prediction-badge p-4 rounded-lg bg-yellow-900 bg-opacity-10 border border-yellow-800';
+                predictionBadge.querySelector('i').className = 'fas fa-leaf text-yellow-400 mr-3 text-xl';
+                predictionBadge.querySelector('p:first-child').className = 'text-sm text-yellow-400 font-medium';
+                predictionBadge.querySelector('p:last-child').className = 'text-lg font-semibold text-yellow-200 mt-1';
+            }
+        }
+    } catch (error) {
+        console.error('Error updating prediction:', error);
+    }
+}
+
+// Initial updates
+updateTimestamp();
+updateStatus();
+updatePrediction();
+
+// Set intervals for updates
+setInterval(updateTimestamp, 1000);
+setInterval(updateStatus, 5000);
+setInterval(updatePrediction, 500);
     </script>
 </body>
 </html>

@@ -1,63 +1,412 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waste Prediction</title>
-    <!-- Bootstrap CSS -->
-    <link href="static/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container">
-        <h1 class="mt-5 mb-4">Waste Prediction</h1>
-        <form id="predictionForm">
-            <div class="form-group">
-                <label for="fileInput">Upload Image:</label>
-                <input type="file" class="form-control-file" id="fileInput" name="file" accept=".jpg, .png" required>
-                <!-- Image preview container -->
-                <div id="imagePreview" class="mt-2"></div>
-            </div>
-            <button type="submit" class="btn btn-primary">Predict</button>
-        </form>
-        <div id="predictionResult" class="mt-3"></div>
-    </div>
-
-    <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/popper.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
+    <title>Waste Classification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
-        $(document).ready(function() {
-            // Function to display image preview
-            function readURL(input) {
-                if (input.files && input.files[0]) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#imagePreview').html('<img src="' + e.target.result + '" class="img-thumbnail" style="max-width: 300px;">');
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1E2837',
+                            200: '#1A2333',
+                            300: '#151D2A',
+                            400: '#0F1621'
+                        }
                     }
-                    reader.readAsDataURL(input.files[0]);
                 }
             }
-            
-            // Trigger image preview on file input change
-            $('#fileInput').change(function() {
-                readURL(this);
-            });
-
-            $('#predictionForm').submit(function(event) {
-                event.preventDefault();
-                var formData = new FormData($(this)[0]);
-                $.ajax({
-                    url: '/uploadimage',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        $('#predictionResult').text('Prediction: ' + response.prediction);
-                    }
-                });
-            });
-        });
+        }
     </script>
+    <style>
+        .preview-image {
+            max-height: 256px;
+            width: auto;
+            margin: 0 auto;
+        }
+        .upload-area {
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #60A5FA;
+        }
+        .file-info {
+            transition: all 0.3s ease;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-dark-400 text-gray-100 py-8 px-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8">
+            <a href="/" class="inline-flex items-center text-gray-400 hover:text-white">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Dashboard
+            </a>
+            <div class="flex items-center space-x-4">
+                <button id="themeToggle" class="p-2 rounded-lg bg-dark-200 hover:bg-dark-100">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <div class="flex items-center space-x-2 bg-dark-200 p-2 rounded-lg">
+                    <div id="status-dot" class="h-2 w-2 bg-gray-500 rounded-full"></div>
+                    <span id="status-text" class="text-sm text-gray-400">Checking system...</span>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-8 text-center text-white">
+            Waste Classification
+        </h1>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Upload Section -->
+            <div class="md:col-span-2">
+                <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                    <form id="uploadForm" class="space-y-6">
+                        <!-- Upload Area -->
+                        <div class="upload-area border-2 border-dashed border-gray-700 rounded-lg p-6 text-center bg-dark-300">
+                            <input 
+                                type="file" 
+                                name="file" 
+                                id="fileInput" 
+                                accept=".jpg,.jpeg,.png" 
+                                class="hidden" 
+                                required
+                            >
+                            <label for="fileInput" class="cursor-pointer block">
+                                <i class="fas fa-upload text-4xl text-blue-400 mb-4"></i>
+                                <span class="mt-2 block text-sm font-medium text-gray-300">
+                                    Click to upload or drag and drop
+                                </span>
+                                <span class="mt-1 block text-xs text-gray-500">
+                                    PNG, JPG up to 10MB
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Preview Container -->
+                        <div id="previewContainer" class="hidden mt-4">
+                            <h3 class="text-lg font-medium text-gray-200 mb-2">Preview</h3>
+                            <div class="relative rounded-lg overflow-hidden bg-dark-300 p-2">
+                                <img id="imagePreview" class="preview-image object-contain" alt="Preview">
+                            </div>
+                            <!-- File Information -->
+                            <div id="fileInfo" class="mt-4 grid grid-cols-2 gap-4">
+                                <div class="bg-dark-300 p-3 rounded-lg">
+                                    <span class="text-sm text-gray-400">File Size</span>
+                                    <p id="fileSize" class="text-lg font-medium text-blue-400">-</p>
+                                </div>
+                                <div class="bg-dark-300 p-3 rounded-lg">
+                                    <span class="text-sm text-gray-400">Dimensions</span>
+                                    <p id="dimensions" class="text-lg font-medium text-blue-400">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button
+                            type="submit"
+                            id="submitButton"
+                            disabled
+                            class="w-full py-3 px-4 rounded-md text-white font-medium bg-gray-700 cursor-not-allowed transition-colors"
+                        >
+                            Classify Waste
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="md:col-span-1 space-y-6">
+                <!-- Status Card -->
+                <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                    <h3 class="text-lg font-medium text-gray-200 mb-4">System Status</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-dark-300 rounded-lg">
+                            <span class="text-sm font-medium text-gray-400">Model</span>
+                            <span id="model-status" class="text-sm font-medium text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i> Ready
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-dark-300 rounded-lg">
+                            <span class="text-sm font-medium text-gray-400">Arduino</span>
+                            <span id="arduino-status" class="text-sm font-medium text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i> Connected
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-dark-300 rounded-lg">
+                            <span class="text-sm font-medium text-gray-400">Average Process Time</span>
+                            <span id="process-time" class="text-sm font-medium text-blue-400">0ms</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Card -->
+                <div id="predictionResult" class="hidden bg-dark-200 rounded-lg shadow-xl p-6">
+                    <h3 class="text-lg font-medium text-gray-200 mb-4">Classification Result</h3>
+                    <div class="prediction-badge p-4 rounded-lg bg-opacity-10 bg-blue-900 border border-blue-800">
+                        <div class="flex items-center">
+                            <i id="predictionIcon" class="fas fa-robot text-blue-400 mr-3 text-xl"></i>
+                            <div>
+                                <p class="text-sm text-blue-400 font-medium">AI Prediction</p>
+                                <p id="predictionText" class="text-lg font-semibold text-blue-200 mt-1">
+                                    Waiting for upload...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Confidence Score -->
+                    <div class="mt-4 p-3 bg-dark-300 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-gray-400">Processing Time</span>
+                            <span id="processingtime" class="text-sm font-medium text-green-400">0ms</span>
+                        </div>
+                       
+                    </div>
+                    <div class="mt-4 p-3 bg-dark-300 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-gray-400">Confidence Score</span>
+                            <span id="confidenceScore" class="text-sm font-medium text-green-400">0%</span>
+                        </div>
+                        <div class="w-full bg-dark-100 rounded-full h-2">
+                            <div id="confidenceBar" class="bg-green-400 rounded-full h-2 transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Alert -->
+                <div id="errorAlert" class="hidden">
+                    <div class="bg-red-900 bg-opacity-20 border border-red-800 rounded-lg p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p id="errorText" class="text-sm text-red-400"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+  // Theme Toggle
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    themeToggle.innerHTML = document.documentElement.classList.contains('dark') ? 
+        '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+});
+
+// Form elements
+const form = document.getElementById('uploadForm');
+const fileInput = document.getElementById('fileInput');
+const previewContainer = document.getElementById('previewContainer');
+const imagePreview = document.getElementById('imagePreview');
+const submitButton = document.getElementById('submitButton');
+const errorAlert = document.getElementById('errorAlert');
+const errorText = document.getElementById('errorText');
+const predictionResult = document.getElementById('predictionResult');
+const predictionText = document.getElementById('predictionText');
+const predictionIcon = document.getElementById('predictionIcon');
+const confidenceScore = document.getElementById('confidenceScore');
+const processingtime = document.getElementById('processingtime');
+const confidenceBar = document.getElementById('confidenceBar');
+const fileSize = document.getElementById('fileSize');
+const dimensions = document.getElementById('dimensions');
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Handle file selection
+fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Set preview image
+            imagePreview.src = e.target.result;
+            
+            // Show file info
+            fileSize.textContent = formatFileSize(file.size);
+            
+            // Get image dimensions
+            const img = new Image();
+            img.onload = function() {
+                dimensions.textContent = `${this.width} × ${this.height}`;
+            }
+            img.src = e.target.result;
+            
+            // Show preview and enable submit
+            previewContainer.classList.remove('hidden');
+            submitButton.disabled = false;
+            submitButton.classList.remove('bg-gray-700', 'cursor-not-allowed');
+            submitButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }
+        reader.readAsDataURL(file);
+    }
+    
+    // Reset previous results
+    predictionResult.classList.add('hidden');
+    errorAlert.classList.add('hidden');
+});
+
+// Handle form submission
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Reset previous states
+    predictionResult.classList.add('hidden');
+    errorAlert.classList.add('hidden');
+    
+    // Show loading state
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+    
+    try {
+        const formData = new FormData(form);
+        const response = await fetch('/uploadimage', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error('Upload failed');
+        }
+        
+        const data = await response.json();
+        
+        // Update prediction display
+        predictionText.textContent = data.prediction;
+        predictionResult.classList.remove('hidden');
+        
+        // Update confidence score
+        const confidence = Math.round(data.confidence * 100);
+        confidenceScore.textContent = `${confidence}%`;
+        confidenceBar.style.width = `${confidence}%`;
+
+        processingtime.textContent = data.processing_time + 'ms'
+        
+        // Set appropriate icon and colors based on prediction
+        if (data.prediction.includes('Recyclable')) {
+            predictionIcon.className = 'fas fa-recycle text-green-400 mr-3 text-xl';
+            confidenceScore.className = 'text-sm font-medium text-green-400';
+            confidenceBar.className = 'bg-green-400 rounded-full h-2';
+        } else {
+            predictionIcon.className = 'fas fa-leaf text-yellow-400 mr-3 text-xl';
+            confidenceScore.className = 'text-sm font-medium text-yellow-400';
+            confidenceBar.className = 'bg-yellow-400 rounded-full h-2';
+        }
+        
+    } catch (error) {
+        errorText.textContent = 'Failed to process image. Please try again.';
+        errorAlert.classList.remove('hidden');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Classify Waste';
+    }
+});
+
+// Update system status
+async function updateStatus() {
+    try {
+        const response = await fetch('/api/status');
+        const data = await response.json();
+        
+        // Update status indicators
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        
+        const isSystemReady = data.model && data.arduino;
+        statusDot.className = `h-2 w-2 rounded-full ${isSystemReady ? 'bg-green-400' : 'bg-red-400'} pulse-dot`;
+        statusText.textContent = isSystemReady ? 'System Ready' : 'System Not Ready';
+        
+        // Update Model Status
+        const modelStatus = document.getElementById('model-status');
+        modelStatus.className = `text-sm font-medium ${data.model ? 'text-green-400' : 'text-red-400'}`;
+        modelStatus.innerHTML = data.model ? 
+            '<i class="fas fa-check-circle mr-1"></i> Ready' : 
+            '<i class="fas fa-times-circle mr-1"></i> Offline';
+
+        // Update Arduino Status
+        const arduinoStatus = document.getElementById('arduino-status');
+        arduinoStatus.className = `text-sm font-medium ${data.arduino ? 'text-green-400' : 'text-red-400'}`;
+        arduinoStatus.innerHTML = data.arduino ? 
+            '<i class="fas fa-check-circle mr-1"></i> Connected' : 
+            '<i class="fas fa-times-circle mr-1"></i> Disconnected';
+
+        // Update Process Time
+        const processTime = document.getElementById('process-time');
+        processTime.textContent = `${data.performance.processing_time}ms`;
+        
+    } catch (error) {
+        console.error('Error updating status:', error);
+    }
+}
+
+// Initial status update and interval
+updateStatus();
+setInterval(updateStatus, 5000);
+
+// Drag and drop handling
+const uploadArea = document.querySelector('.upload-area');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    uploadArea.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    uploadArea.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    uploadArea.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight(e) {
+    uploadArea.classList.add('border-blue-500');
+}
+
+function unhighlight(e) {
+    uploadArea.classList.remove('border-blue-500');
+}
+
+uploadArea.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    fileInput.files = files;
+    fileInput.dispatchEvent(new Event('change'));
+}
+</script>
+
 </body>
+
 </html>

@@ -1,283 +1,277 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <title>Waste ID</title>
-
-  <style>
-    body {
-  font-family: "Lexend", sans-serif;
-}
-
-.container {
-  width: 1100px;
-  margin: 0 auto;
-}
-@media (max-width: 996px) {
-  .container {
-    width: 100%;
-    padding-left: -15px;
-    padding-right: -15px;
-  }
-}
-
-.header {
-  text-align: center;
-}
-.header h1 {
-  font-size: 45px;
-}
-@media (max-width: 996px) {
-  .header h1 {
-    font-size: 30px;
-  }
-}
-@media (max-width: 600px) {
-  .header h1 {
-    font-size: 20px;
-  }
-}
-
-.list__items {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-column-gap: 1.5em;
-  grid-row-gap: 1.5em;
-}
-@media (max-width: 996px) {
-  .list__items {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 600px) {
-  .list__items {
-    grid-template-columns: repeat(1, 1fr);
-  }
-}
-
-.item {
-  border: 1px solid #ddd;
-  height: 350px;
-  width: 100%;
-  background: #ddd;
-  overflow: hidden;
-  position: relative;
-}
-@media (max-width: 996px) {
-  .item {
-    height: 300px;
-  }
-}
-.item:before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 2;
-  transition: all 200ms linear;
-}
-.item:hover:before {
-  background: rgba(0, 0, 0, 0.7);
-}
-.item:hover .item__content {
-  visibility: hidden;
-}
-.item:hover .item__content--hidden {
-  visibility: visible;
-}
-.item .item__content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-}
-.item .item__content--icon {
-  margin: 0 auto;
-}
-.item .item__content--text {
-  color: white;
-  margin-top: 10px;
-  font-weight: 600;
-  font-size: 18px;
-}
-.item .item__content--readmore {
-  position: absolute;
-  bottom: 10px;
-  color: #d13853;
-}
-.item .item__content--hidden {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  transform: translate(-50%, -50%);
-  visibility: hidden;
-  z-index: 5;
-}
-.item .item__content--hidden--innerWrap {
-  width: 70%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-.item .item__content--hidden--header {
-  color: white;
-  margin-bottom: 1.2em;
-  margin-top: 2.5em;
-  font-weight: 600;
-  font-size: 18px;
-}
-.item .item__content--hidden--list {
-  width: 100%;
-  color: white;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-.item .item__content--hidden--list li {
-  padding: 0 0 0 13px;
-  margin-bottom: 10px;
-  position: relative;
-  font-size: 14px;
-}
-.item .item__content--hidden--list li:before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, 0);
-  left: 0;
-  border-radius: 50%;
-  width: 5px;
-  height: 5px;
-  background-color: #d13853;
-}
-.item .item__content--hidden--readmore {
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, 0);
-  bottom: 30px;
-  text-decoration: none;
-}
-.item .item__content--hidden--readmore span {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  position: relative;
-  color: #d13853;
-  font-weight: 600;
-}
-.item .item__content--hidden--readmore span:before {
-  content: "";
-  width: 8px;
-  height: 2px;
-  right: -15px;
-  position: absolute;
-  background-color: #d13853;
-  top: 4px;
-  transform: rotate(45deg);
-}
-.item .item__content--hidden--readmore span:after {
-  content: "";
-  width: 8px;
-  height: 2px;
-  right: -15px;
-  position: absolute;
-  background-color: #d13853;
-  top: 9px;
-  transform: rotate(-45deg);
-}
-.item .item__image img {
-  width: 100%;
-  object-fit: contain;
-  height: auto;
-}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waste Identification System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1E2837',
+                            200: '#1A2333',
+                            300: '#151D2A',
+                            400: '#0F1621'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-online {
+            background-color: #34D399;
+        }
+        .status-offline {
+            background-color: #EF4444;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
 </head>
-<body>
-<!-- partial:index.partial.html -->
-<link rel="preconnect" href="https://fonts.gstatic.com">
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap" rel="stylesheet">
+<body class="bg-dark-400 min-h-screen text-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-4xl font-bold text-white">Waste Identification System</h1>
+            <button id="themeToggle" class="p-2 rounded-lg bg-dark-200 hover:bg-dark-100">
+                <i class="fas fa-sun"></i>
+            </button>
+        </div>
+            
+        <!-- Status Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Camera Status -->
+            <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-camera text-blue-400 text-xl mr-3"></i>
+                        <div class="text-left">
+                            <h3 class="font-semibold text-gray-100">Camera</h3>
+                            <div class="flex items-center mt-1">
+                                <span id="camera-indicator" class="status-indicator status-offline"></span>
+                                <span id="camera-status" class="text-sm text-gray-400">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right text-sm text-gray-500" id="camera-uptime">
+                        Uptime: 0h 0m
+                    </div>
+                </div>
+            </div>
 
-<div class="container">
-  
-  <div class="header">
-    <h1>Organic Waste Identification</h1>
-  </div>
-  
-  <div class="list__items">
-    <div class="item">
-         <div class="item__image">
-           <img src="static/img/background.jpg" alt="">
-         </div>
-         
-         <div class="item__content">
-           <div class="item__content--icon">
-             <img src="static/img/vision.svg">
-           </div>
-            <div class="item__content--text">Upload an image</div>
-         </div>
-         
-          <div class="item__content--hidden">
-            <div class="item__content--hidden--innerWrap">
-              <div class="item__content--hidden--header">
-                Upload an image
+            <!-- Arduino Status -->
+            <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-microchip text-green-400 text-xl mr-3"></i>
+                        <div class="text-left">
+                            <h3 class="font-semibold text-gray-100">Arduino</h3>
+                            <div class="flex items-center mt-1">
+                                <span id="arduino-indicator" class="status-indicator status-offline"></span>
+                                <span id="arduino-status" class="text-sm text-gray-400">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right text-sm text-gray-500" id="arduino-port">
+                        Port: --
+                    </div>
+                </div>
             </div>
-            
-            <ul class='item__content--hidden--list'>
-              <li>Upload an image to get it's classification </li>
-              
-            </u>
+
+            <!-- ML Model Status -->
+            <div class="bg-dark-200 rounded-lg shadow-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-brain text-purple-400 text-xl mr-3"></i>
+                        <div class="text-left">
+                            <h3 class="font-semibold text-gray-100">ML Model</h3>
+                            <div class="flex items-center mt-1">
+                                <span id="model-indicator" class="status-indicator status-offline"></span>
+                                <span id="model-status" class="text-sm text-gray-400">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right text-sm text-gray-500" id="model-version">
+                        v1.0.0
+                    </div>
+                </div>
             </div>
-            
-            
-             <a href="/upload" class="item__content--hidden--readmore">
-                <span>Upload</span>
-              </a>
-          </div>
-         
-       </div>
-    <div class="item">
-         <div class="item__image">
-          <img src="static/img/background.jpg" alt="">
-         </div>
-         
-         <div class="item__content">
-           <div class="item__content--icon">
-             <img src="static/img/machineLearning.svg">
-           </div>
-            <div class="item__content--text">Connect to image feed</div>
-         </div>
-         
-          <div class="item__content--hidden">
-            <div class="item__content--hidden--innerWrap">
-              <div class="item__content--hidden--header">
-                Connect to image feild
+        </div>
+
+        <!-- System Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-dark-200 rounded-lg shadow-xl p-4">
+                <h4 class="text-sm text-gray-400 mb-1">Processing Time</h4>
+                <p id="processing-time" class="text-2xl font-bold text-blue-400">0ms</p>
             </div>
-            
-            <ul class='item__content--hidden--list'>
-              <li>Connect to a live feild to get realtime classification</li>
-            
-            </u>
+            <div class="bg-dark-200 rounded-lg shadow-xl p-4">
+                <h4 class="text-sm text-gray-400 mb-1">Accuracy</h4>
+                <p id="accuracy" class="text-2xl font-bold text-green-400">0%</p>
             </div>
-            
-            
-             <a href="/livefeed" class="item__content--hidden--readmore">
-                <span>connect</span>
-              </a>
-          </div>
-         
-       </div>
-   
-  </div>
-</div>
-<!-- partial -->
-  
+            <div class="bg-dark-200 rounded-lg shadow-xl p-4">
+                <h4 class="text-sm text-gray-400 mb-1">Items Processed</h4>
+                <p id="items-processed" class="text-2xl font-bold text-purple-400">0</p>
+            </div>
+            <div class="bg-dark-200 rounded-lg shadow-xl p-4">
+                <h4 class="text-sm text-gray-400 mb-1">System Uptime</h4>
+                <p id="system-uptime" class="text-2xl font-bold text-yellow-400">0h 0m</p>
+            </div>
+        </div>
+
+        <!-- Predictions Chart -->
+        <div class="bg-dark-200 rounded-lg shadow-xl p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-4">Classification Distribution</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-dark-300 rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-400">Recyclable</span>
+                        <span id="recyclable-count" class="text-sm font-medium text-green-400">0</span>
+                    </div>
+                    <div class="w-full bg-dark-100 rounded-full h-2">
+                        <div id="recyclable-bar" class="bg-green-400 rounded-full h-2 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="bg-dark-300 rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-400">Organic</span>
+                        <span id="organic-count" class="text-sm font-medium text-yellow-400">0</span>
+                    </div>
+                    <div class="w-full bg-dark-100 rounded-full h-2">
+                        <div id="organic-bar" class="bg-yellow-400 rounded-full h-2 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Actions Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Upload Image Card -->
+            <div class="bg-dark-200 rounded-lg shadow-xl overflow-hidden card-hover">
+                <div class="p-6">
+                    <i class="fas fa-upload text-blue-400 text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-100">Upload Image</h3>
+                    <p class="text-gray-400 mb-4">
+                        Upload an image to get instant waste classification
+                    </p>
+                    <a href="/upload" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        Upload Image
+                    </a>
+                </div>
+            </div>
+
+            <!-- Live Feed Card -->
+            <div class="bg-dark-200 rounded-lg shadow-xl overflow-hidden card-hover">
+                <div class="p-6">
+                    <i class="fas fa-video text-green-400 text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-100">Live Feed</h3>
+                    <p class="text-gray-400 mb-4">
+                        Connect to live feed for real-time waste classification
+                    </p>
+                    <a href="/livefeed" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                        Connect to Feed
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            themeToggle.innerHTML = document.documentElement.classList.contains('dark') ? 
+                '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // Format uptime
+        function formatUptime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}m`;
+        }
+
+        // Update predictions chart
+        function updatePredictionChart(recyclable, organic) {
+            const total = recyclable + organic;
+            const recyclablePercent = total > 0 ? (recyclable / total) * 100 : 0;
+            const organicPercent = total > 0 ? (organic / total) * 100 : 0;
+
+            document.getElementById('recyclable-count').textContent = recyclable;
+            document.getElementById('organic-count').textContent = organic;
+            document.getElementById('recyclable-bar').style.width = `${recyclablePercent}%`;
+            document.getElementById('organic-bar').style.width = `${organicPercent}%`;
+        }
+
+        // Update status and metrics
+        async function updateDashboard() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                // Update Component Statuses
+                function updateStatus(id, status, statusText) {
+                    const indicator = document.getElementById(`${id}-indicator`);
+                    const statusEl = document.getElementById(`${id}-status`);
+                    indicator.className = `status-indicator status-${status ? 'online' : 'offline'}`;
+                    statusEl.textContent = statusText;
+                }
+
+                updateStatus('camera', data.camera, data.camera ? 'Connected' : 'Disconnected');
+                updateStatus('arduino', data.arduino, data.arduino ? 'Connected' : 'Disconnected');
+                updateStatus('model', data.model, data.model ? 'Loaded' : 'Not Loaded');
+
+                // Update Additional Info
+                document.getElementById('arduino-port').textContent = `Port: ${data.arduino_port || '--'}`;
+                document.getElementById('model-version').textContent = `v${data.model_version}`;
+                document.getElementById('camera-uptime').textContent = `Uptime: ${formatUptime(data.metrics.camera_uptime)}`;
+                
+                // Update Metrics
+                document.getElementById('processing-time').textContent = `${data.performance.processing_time}ms`;
+                document.getElementById('accuracy').textContent = `${data.performance.accuracy}%`;
+                document.getElementById('items-processed').textContent = data.metrics.items_processed.toLocaleString();
+                document.getElementById('system-uptime').textContent = formatUptime(data.metrics.system_uptime);
+
+                // Update Predictions Chart
+                updatePredictionChart(
+                    data.metrics.predictions.recyclable,
+                    data.metrics.predictions.organic
+                );
+
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+            }
+        }
+
+        // Initial update and set interval
+        updateDashboard();
+        setInterval(updateDashboard, 1000);
+    </script>
 </body>
 </html>

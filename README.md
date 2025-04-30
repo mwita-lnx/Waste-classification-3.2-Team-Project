@@ -289,10 +289,9 @@ Our interdisciplinary team brings together expertise in machine learning, softwa
 
 | Name | Role | Contribution |
 |------|------|--------------|
-| Name 1 | Project Lead | System architecture, team coordination |
-| Name 2 | ML Engineer | CNN model development, training pipelines |
-| Name 3 | Full-stack Developer | Flask application, UI implementation |
-| Name 4 | DevOps Engineer | Docker containerization, deployment |
+| Omondi Gerald | Project Lead | System architecture, team coordination |
+| Lennox Mwita| ML Engineer | CNN model development, training pipelines |
+| Ron Isaac | Full-stack Developer | Flask application, UI implementation |
 
 ---
 
